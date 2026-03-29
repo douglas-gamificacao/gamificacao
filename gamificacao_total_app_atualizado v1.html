@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gamificação Total</title>
+  <style>
+    :root {
+      --bg: #f5f3ee;
+      --card: #ffffff;
+      --text: #1f1f1f;
+      --muted: #77736d;
+      --line: #d9d3ca;
+      --primary: #5a4fcf;
+      --primary-soft: #ece9ff;
+      --green-soft: #e7f2d8;
+      --green-line: #9cc95e;
+      --gold-soft: #f8ecd8;
+      --gold-line: #efb658;
+      --chip: #f1eee8;
+      --danger: #a86a1d;
+      --shadow: 0 10px 30px rgba(0,0,0,.06);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .app {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 18px 20px 40px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 6px 0 14px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+    }
+
+    .logo {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: var(--primary);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      box-shadow: var(--shadow);
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 16px 0 18px;
+    }
+
+    .tab {
+      border: 1px solid #bdb7b0;
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.65);
+      padding: 16px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: .2s ease;
+      font-weight: 700;
+      color: #34312d;
+    }
+
+    .tab.active {
+      background: var(--primary-soft);
+      border-color: #a79fff;
+      color: #3e35a9;
+    }
+
+    .tab .emoji {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .summary {
+      margin: 8px 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.02);
+    }
+
+    .card.top1 { background: var(--primary-soft); border-color: #a79fff; }
+    .card.top2 { background: var(--green-soft); border-color: var(--green-line); }
+    .card.top3 { background: var(--gold-soft); border-color: var(--gold-line); }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .rank {
+      width: 40px;
+      text-align: center;
+      font-weight: 700;
+      color: #444;
+      flex: 0 0 auto;
+    }
+
+    .rank.medal { font-size: 20px; }
+
+    .info { min-width: 0; }
+    .info .name {
+      font-size: 16px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .info .sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    .right {
+      text-align: right;
+      flex: 0 0 auto;
+      min-width: 110px;
+    }
+
+    .points {
+      color: var(--primary);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .level {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    .search-label {
+      font-size: 16px;
+      margin: 4px 0 8px;
+    }
+
+    .search-wrap { position: relative; }
+
+    .search {
+      width: 100%;
+      height: 42px;
+      border-radius: 10px;
+      border: 2px solid #6da0ff;
+      background: #fff;
+      padding: 0 12px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .suggestions {
+      margin-top: 6px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .suggestion {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-top: 1px solid #eee;
+      cursor: pointer;
+    }
+
+    .suggestion:first-child { border-top: 0; }
+    .suggestion:hover { background: #f8f7ff; }
+
+    .pill {
+      display: inline-block;
+      background: #ece8de;
+      color: #77736d;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin: 14px 0 10px;
+      color: #444;
+      text-decoration: none;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .profile {
+      background: var(--primary-soft);
+      border: 1px solid #a79fff;
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .avatar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .avatar {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .student-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: #3f388e;
+    }
+
+    .student-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 7px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .profile-rank {
+      text-align: right;
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    .profile-rank .big { font-size: 24px; }
+    .profile-rank .small { font-size: 14px; color: #666; font-weight: 700; }
+
+    .panel {
+      margin-top: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .analysis-first {
+      margin-top: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #7b766f;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      margin-bottom: 12px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .stat {
+      background: #f6f3ee;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat .kicker { color: #7b766f; font-size: 13px; }
+    .stat .value { font-size: 18px; font-weight: 800; margin: 4px 0; }
+    .stat .foot { color: #5c5852; font-size: 13px; }
+
+    .goal {
+      background: #eef7df;
+      border: 1px solid #95c553;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+
+    .goal .headline { color: #4f7d11; font-weight: 800; font-size: 13px; text-transform: uppercase; }
+    .goal .text { color: #406814; font-size: 15px; font-weight: 700; margin-top: 8px; }
+
+    .track {
+      height: 8px;
+      border-radius: 999px;
+      background: #d6e5bc;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    .fill {
+      height: 100%;
+      background: #4c7c0c;
+      border-radius: 999px;
+    }
+
+    .goal-scale {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      color: #4f7d11;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .collections {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .collection-title {
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .collection-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .ins-card {
+      border: 1px solid #d9d3ca;
+      border-radius: 10px;
+      background: #faf9f7;
+      padding: 10px 8px;
+      text-align: center;
+      min-height: 82px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #aaa59f;
+    }
+
+    .ins-card.gained {
+      background: var(--primary-soft);
+      border-color: #a79fff;
+      color: #433aa5;
+    }
+
+    .ins-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #f0eeea;
+      border: 1px solid #d2ccc4;
+      margin-bottom: 7px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #1f1f1f;
+      filter: grayscale(1);
+      overflow: hidden;
+    }
+
+    .ins-icon svg {
+      width: 22px;
+      height: 22px;
+      display: block;
+    }
+
+    .ins-card.gained .ins-icon {
+      background: #ffffff;
+      border-color: #8f87ef;
+      color: #111111;
+      filter: grayscale(1);
+    }
+
+    .ins-name {
+      font-size: 12px;
+      line-height: 1.15;
+    }
+
+    .axes {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .axis-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 30px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .axis-name { font-size: 14px; }
+    .axis-tag {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .tag-good { background: #def5e7; color: #337d4d; }
+    .tag-warn { background: #fde8de; color: #aa6438; }
+
+    .axis-track {
+      height: 6px;
+      background: #ddd8d3;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .axis-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 999px;
+    }
+
+    .history-list { display: flex; flex-direction: column; }
+
+    .history-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid #ece7df;
+    }
+
+    .history-item:first-child { border-top: 0; }
+
+    .history-title {
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #8e84f1;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+
+    .history-sub { color: var(--muted); font-size: 13px; margin-left: 16px; }
+    .history-points { font-weight: 800; }
+    .plus { color: var(--primary); }
+    .minus { color: var(--danger); }
+
+    .empty { color: var(--muted); font-style: italic; }
+
+    @media (max-width: 700px) {
+      .app { padding: 14px 14px 32px; }
+      .tabs { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; }
+      .profile { flex-direction: column; align-items: flex-start; }
+      .profile-rank { text-align: left; }
+      .collection-grid { grid-template-columns: repeat(2, 1fr); }
+      .axis-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="logo">★</div>
+      <div class="title">
+        <h1>Gamificação Total</h1>
+        <p>Aulas de História • Prof. Douglas Sousa</p>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="individual"><span class="emoji">🏆</span>Ranking<br>Individual</button>
+      <button class="tab" data-tab="turmas"><span class="emoji">🏫</span>Ranking<br>Turmas</button>
+      <button class="tab" data-tab="ficha"><span class="emoji">🎮</span>Minha<br>Ficha</button>
+    </div>
+
+    <section id="tab-individual" class="section active">
+      <div class="summary" id="individualSummary"></div>
+      <div class="list" id="individualList"></div>
+    </section>
+
+    <section id="tab-turmas" class="section">
+      <div class="list" id="turmasList"></div>
+    </section>
+
+    <section id="tab-ficha" class="section">
+      <div id="fichaSearchView">
+        <div class="search-label">Digite seu nome para ver sua ficha</div>
+        <div class="search-wrap">
+          <input id="searchInput" class="search" type="text" placeholder="Digite pelo menos 2 letras" />
+        </div>
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+
+      <div id="fichaDetailView" style="display:none;">
+        <a class="back-link" id="backToSearch">← Buscar outro aluno</a>
+
+        <div class="profile">
+          <div class="avatar-wrap">
+            <div class="avatar" id="studentInitials">GT</div>
+            <div>
+              <div class="student-name" id="studentName"></div>
+              <div class="student-meta" id="studentClass"></div>
+              <div class="badge" id="studentLevel"></div>
+            </div>
+          </div>
+          <div class="profile-rank">
+            <div class="big" id="studentRank"></div>
+            <div class="small" id="studentRankTotal"></div>
+          </div>
+        </div>
+
+        <div class="analysis-first">
+          <div class="panel-title">Análise pedagógica</div>
+          <div id="studentAnalysis"></div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="kicker">Pontos totais</div>
+            <div class="value" id="statPontos"></div>
+            <div class="foot">acumulados</div>
+          </div>
+          <div class="stat">
+            <div class="kicker">Saldo</div>
+            <div class="value" id="statSaldo"></div>
+            <div class="foot">para troca</div>
+          </div>
+          <div class="stat">
+            <div class="kicker">Insígnias</div>
+            <div class="value" id="statInsignias"></div>
+            <div class="foot">conquistadas</div>
+          </div>
+        </div>
+
+        <div class="goal">
+          <div class="headline">Próximo objetivo</div>
+          <div class="text" id="goalText"></div>
+          <div class="track"><div class="fill" id="goalFill"></div></div>
+          <div class="goal-scale"><span id="goalCurrent"></span><span id="goalTarget"></span></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Coleções de insígnias</div>
+          <div id="collectionsContainer" class="collections"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Desempenho por eixo</div>
+          <div id="axesContainer" class="axes"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Histórico de cartas</div>
+          <div id="cardsHistory" class="history-list"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Histórico de insígnias</div>
+          <div id="insigniasHistory" class="history-list"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const data = {
+      totalAlunos: 123,
+      alunosComPontuacao: 7,
+      rankingIndividual: [
+        { posicao: 1, nome: 'Julia Anzolin Macedo Da Cruz De Sousa', turma: '7º ano', pontos: 3000, nivel: 'Explorador', saldo: 2000 },
+        { posicao: 2, nome: 'Pierre De Almeida Assuncao', turma: '7º ano', pontos: 2000, nivel: 'Iniciante', saldo: 2000 },
+        { posicao: 3, nome: 'Luan Rodrigues Borges', turma: '8º ano', pontos: 1300, nivel: 'Explorador', saldo: 1300 },
+        { posicao: 4, nome: 'Acaua Bruno Pereira Miranda', turma: '1ª série', pontos: 1000, nivel: 'Explorador', saldo: 1000 }
+      ],
+      rankingTurmas: [
+        { posicao: 1, turma: '7º ano', alunos: 18, cartas: 5, pontosTotais: 5000 },
+        { posicao: 2, turma: '8º ano', alunos: 16, cartas: 7, pontosTotais: 1900 },
+        { posicao: 3, turma: '1ª série', alunos: 21, cartas: 1, pontosTotais: 1000 },
+        { posicao: 4, turma: '6º ano', alunos: 20, cartas: 2, pontosTotais: 200 }
+      ],
+      fichas: [
+        {
+          alunoId: 'julia-anzolin-macedo-da-cruz-de-sousa',
+          nome: 'Julia Anzolin Macedo Da Cruz De Sousa',
+          turma: '7º ano',
+          posicao: 1,
+          totalAlunos: 123,
+          nivel: 'Explorador',
+          pontosTotais: 3000,
+          saldo: 2000,
+          insignias: 2,
+          analise: 'Julia está no nível Explorador, com 3000 pontos, 2 insígnia(s) e 3 carta(s). O desenvolvimento ainda está no início da jornada. Destaca-se na iniciação científica e pesquisa.',
+          proximoObjetivo: {
+            nome: 'Atena',
+            necessario: 900,
+            atual: 2000,
+            meta: 900,
+            percentual: 100
+          },
+          colecoes: [
+            { nome: 'Deuses Gregos', itens: [
+              { nome: 'Apolo', ganho: true, svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2" fill="currentColor"></circle><path d="M12 1.8v3M12 19.2v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1.8 12h3M19.2 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>' },
+              { nome: 'Afrodite', ganho: true, svg: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.6-9-9.2C1.8 8.2 3.9 5 7.3 5c2 0 3.4 1.1 4.7 2.8C13.3 6.1 14.7 5 16.7 5 20.1 5 22.2 8.2 21 11.8 19 16.4 12 21 12 21z"/></svg>' },
+              { nome: 'Atena', ganho: false, svg: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l3 2 2.8.3-1.8 2.5.5 2.8-2.5-1.1L12 11l-2 1.5-2.5 1.1.5-2.8L6.2 5.3 9 5l3-2z"/><circle cx="9.2" cy="14.2" r="1.2" fill="#fff"/><circle cx="14.8" cy="14.2" r="1.2" fill="#fff"/><path d="M12 15.2l1.2 1.6H10.8L12 15.2z"/></svg>' },
+              { nome: 'Posseidon', ganho: false, svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M12 2l-3 4M12 2l3 4M9 6v4l-3 2M15 6v4l3 2M12 10l-2 2M12 10l2 2"/></svg>' },
+              { nome: 'Zeus', ganho: false, simbolo: '⚡' }
+            ]},
+            { nome: 'Egito Antigo', itens: [
+              { nome: 'Pirâmides', ganho: false, svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 19L9 8l6 11H3z" fill="currentColor" opacity=".18"/><path d="M10 19l4-7 7 7h-11z" fill="currentColor" opacity=".45"/></svg>' },
+              { nome: 'Anubis', ganho: false, svg: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 20v-5l2-3 1-5 3-3 3 3 1 5 2 3v5h-3v-4H9v4H6z"/><path d="M9.2 7.2L7 3.5l3 .8L9.2 7.2zm5.6 0L14 4.3l3-.8-2.2 3.7z"/></svg>' },
+              { nome: 'Múmia', ganho: false, svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="7" y="4" width="10" height="16" rx="3" fill="currentColor" opacity=".12"/><path d="M8 7h8M7.5 10h9M8 13h8M7.5 16h9"/><circle cx="10" cy="8.5" r=".9" fill="currentColor"/><circle cx="14" cy="8.5" r=".9" fill="currentColor"/></svg>' },
+              { nome: 'Esfinge', ganho: false, svg: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 16h12c1.7 0 3 1.3 3 3H4c0-1.6.8-2.5 1-3z"/><path d="M8 16l1.4-4.2c.6-1.8 2.2-3 4.1-3h1.8c1 0 1.9.4 2.6 1.1l1.1 1.1-1.6 1.1-1-1c-.3-.3-.7-.4-1.1-.4h-1.6c-1 0-1.8.6-2.1 1.5L10.5 16H8z"/><circle cx="8.5" cy="8.7" r="2.5"/><path d="M6.5 7.8l-1.7-1.5 2.4-.2.7 1.7z"/></svg>' },
+              { nome: 'Olho Horus', ganho: false, svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.4-4.5 9.5-4.5 9.5 4.5 9.5 4.5-3.4 4.5-9.5 4.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/><path d="M7 17l2-1.6M10 18.7l1.3-2"/></svg>' }
+            ]}
+          ],
+          eixos: [
+            { nome: 'Iniciação Científica', valor: 3, tag: 'destaque', tipo: 'good' },
+            { nome: 'Frequência', valor: 0 },
+            { nome: 'Desempenho', valor: 0 },
+            { nome: 'Protagonismo Juvenil', valor: 0, tag: 'atenção', tipo: 'warn' }
+          ],
+          historicoCartas: [
+            { titulo: 'Antônio Carlos Diegues', subtitulo: 'Iniciação Científica • 28/03/2026', pontos: '+1000' }
+          ],
+          historicoInsignias: [
+            { titulo: 'Afrodite', subtitulo: 'Troca por insígnia • 26/03/2026', pontos: '-600' },
+            { titulo: 'Apolo', subtitulo: 'Troca por insígnia • 15/03/2026', pontos: '-400' }
+          ]
+        }
+      ]
+    };
+
+    const tabs = document.querySelectorAll('.tab');
+    const sections = {
+      individual: document.getElementById('tab-individual'),
+      turmas: document.getElementById('tab-turmas'),
+      ficha: document.getElementById('tab-ficha')
+    };
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const key = tab.dataset.tab;
+        Object.keys(sections).forEach(k => sections[k].classList.toggle('active', k === key));
+      });
+    });
+
+    function medalForPosition(pos) {
+      if (pos === 1) return '🥇';
+      if (pos === 2) return '🥈';
+      if (pos === 3) return '🥉';
+      return pos;
+    }
+
+    function cardClass(pos) {
+      if (pos === 1) return 'top1';
+      if (pos === 2) return 'top2';
+      if (pos === 3) return 'top3';
+      return '';
+    }
+
+    function initials(name) {
+      return name.split(' ').slice(0,2).map(p => p[0] || '').join('').toUpperCase();
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function renderRankingIndividual() {
+      document.getElementById('individualSummary').textContent = `${data.totalAlunos} alunos • ${data.alunosComPontuacao} com pontuação`;
+      const list = document.getElementById('individualList');
+      list.innerHTML = data.rankingIndividual.map(aluno => `
+        <div class="card ${cardClass(aluno.posicao)}">
+          <div class="row">
+            <div class="left">
+              <div class="rank ${aluno.posicao <= 3 ? 'medal' : ''}">${medalForPosition(aluno.posicao)}</div>
+              <div class="info">
+                <div class="name">${escapeHtml(aluno.nome)}</div>
+                <div class="sub">${escapeHtml(aluno.turma)}</div>
+              </div>
+            </div>
+            <div class="right">
+              <div class="points">${aluno.pontos}</div>
+              <div class="level">${escapeHtml(aluno.nivel)}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderRankingTurmas() {
+      const list = document.getElementById('turmasList');
+      list.innerHTML = data.rankingTurmas.map(turma => `
+        <div class="card ${cardClass(turma.posicao)}">
+          <div class="row">
+            <div class="left">
+              <div class="rank ${turma.posicao <= 3 ? 'medal' : ''}">${medalForPosition(turma.posicao)}</div>
+              <div class="info">
+                <div class="name">${escapeHtml(turma.turma)}</div>
+                <div class="sub">${turma.alunos} alunos • ${turma.cartas} cartas</div>
+              </div>
+            </div>
+            <div class="right">
+              <div class="points">${turma.pontosTotais}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    const suggestions = document.getElementById('suggestions');
+    const fichaSearchView = document.getElementById('fichaSearchView');
+    const fichaDetailView = document.getElementById('fichaDetailView');
+
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.trim().toLowerCase();
+      if (term.length < 2) {
+        suggestions.innerHTML = '';
+        return;
+      }
+      const filtered = data.fichas.filter(a => a.nome.toLowerCase().includes(term)).slice(0, 10);
+      suggestions.innerHTML = filtered.map(a => `
+        <div class="suggestion" data-id="${a.alunoId}">
+          <div>${escapeHtml(a.nome)}</div>
+          <div class="pill">${escapeHtml(a.turma)}</div>
+        </div>
+      `).join('') || `<div class="suggestion"><div class="empty">Nenhum aluno encontrado.</div></div>`;
+
+      suggestions.querySelectorAll('.suggestion[data-id]').forEach(el => {
+        el.addEventListener('click', () => openFicha(el.dataset.id));
+      });
+    });
+
+    document.getElementById('backToSearch').addEventListener('click', () => {
+      fichaDetailView.style.display = 'none';
+      fichaSearchView.style.display = 'block';
+      suggestions.innerHTML = '';
+      searchInput.value = '';
+      searchInput.focus();
+    });
+
+    function openFicha(id) {
+      const aluno = data.fichas.find(a => a.alunoId === id);
+      if (!aluno) return;
+
+      fichaSearchView.style.display = 'none';
+      fichaDetailView.style.display = 'block';
+
+      document.getElementById('studentInitials').textContent = initials(aluno.nome);
+      document.getElementById('studentName').textContent = aluno.nome;
+      document.getElementById('studentClass').textContent = aluno.turma;
+      document.getElementById('studentLevel').textContent = aluno.nivel;
+      document.getElementById('studentRank').textContent = `#${aluno.posicao}`;
+      document.getElementById('studentRankTotal').textContent = `de ${aluno.totalAlunos}`;
+      document.getElementById('studentAnalysis').textContent = aluno.analise;
+      document.getElementById('statPontos').textContent = aluno.pontosTotais;
+      document.getElementById('statSaldo').textContent = aluno.saldo;
+      document.getElementById('statInsignias').textContent = aluno.insignias;
+
+      document.getElementById('goalText').textContent = `Conquiste ${aluno.proximoObjetivo.nome} — necessário ${aluno.proximoObjetivo.necessario} pts de saldo`;
+      document.getElementById('goalFill').style.width = `${Math.max(0, Math.min(100, aluno.proximoObjetivo.percentual))}%`;
+      document.getElementById('goalCurrent').textContent = `${aluno.proximoObjetivo.atual} pts atuais`;
+      document.getElementById('goalTarget').textContent = `${aluno.proximoObjetivo.meta} pts`;
+
+      const collectionsContainer = document.getElementById('collectionsContainer');
+      collectionsContainer.innerHTML = aluno.colecoes.length ? aluno.colecoes.map(col => `
+        <div>
+          <div class="collection-title">${escapeHtml(col.nome)}</div>
+          <div class="collection-grid">
+            ${col.itens.map(item => `
+              <div class="ins-card ${item.ganho ? 'gained' : ''}">
+                <div class="ins-icon">${item.svg || escapeHtml(item.simbolo || '')}</div>
+                <div class="ins-name">${escapeHtml(item.nome)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('') : '<div class="empty">Nenhuma coleção cadastrada.</div>';
+
+      const maxAxis = Math.max(1, ...aluno.eixos.map(e => e.valor || 0));
+      document.getElementById('axesContainer').innerHTML = aluno.eixos.map(eixo => `
+        <div class="axis-row">
+          <div class="axis-name">${escapeHtml(eixo.nome)} ${eixo.tag ? `<span class="axis-tag ${eixo.tipo === 'good' ? 'tag-good' : 'tag-warn'}">${escapeHtml(eixo.tag)}</span>` : ''}</div>
+          <div class="axis-track"><div class="axis-fill" style="width:${(eixo.valor / maxAxis) * 100}%"></div></div>
+          <div>${eixo.valor}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('cardsHistory').innerHTML = aluno.historicoCartas.length ? aluno.historicoCartas.map(item => `
+        <div class="history-item">
+          <div>
+            <div class="history-title"><span class="dot"></span>${escapeHtml(item.titulo)}</div>
+            <div class="history-sub">${escapeHtml(item.subtitulo)}</div>
+          </div>
+          <div class="history-points plus">${escapeHtml(item.pontos)}</div>
+        </div>
+      `).join('') : '<div class="empty">Nenhuma carta registrada.</div>';
+
+      document.getElementById('insigniasHistory').innerHTML = aluno.historicoInsignias.length ? aluno.historicoInsignias.map(item => `
+        <div class="history-item">
+          <div>
+            <div class="history-title"><span class="dot"></span>${escapeHtml(item.titulo)}</div>
+            <div class="history-sub">${escapeHtml(item.subtitulo)}</div>
+          </div>
+          <div class="history-points minus">${escapeHtml(item.pontos)}</div>
+        </div>
+      `).join('') : '<div class="empty">Nenhuma insígnia registrada.</div>';
+    }
+
+    renderRankingIndividual();
+    renderRankingTurmas();
+  </script>
+</body>
+</html>
